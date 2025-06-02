@@ -35,7 +35,9 @@ const LoginPage = () => {
 
     try {
       const identifierInput = formData.identifier.trim();
+      // console.log('Identifier input:', identifierInput); // Removed
       const isEmail = identifierInput.includes('@');
+      // console.log('Is email?', isEmail); // Removed
       let resolvedEmail = isEmail ? identifierInput.toLowerCase() : '';
 
       if (isEmail && !/\S+@\S+\.\S+/.test(identifierInput)) {
@@ -45,9 +47,11 @@ const LoginPage = () => {
       }
 
       if (!isEmail) {
+        // console.log('Identifier is not an email, attempting username lookup...'); // Removed
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where('username', '==', identifierInput.toLowerCase()));
         const querySnapshot = await getDocs(q);
+        // console.log('Username query snapshot:', querySnapshot.docs.map(doc => doc.data())); // Removed
 
         if (querySnapshot.empty) {
           setNotification({ message: 'Username not found. Please check your username or try with email.', type: 'error' });
@@ -55,6 +59,7 @@ const LoginPage = () => {
           return;
         }
         resolvedEmail = querySnapshot.docs[0].data().email;
+        // console.log('Resolved email from username:', resolvedEmail); // Removed as per user request
         if (!resolvedEmail) {
             setNotification({ message: 'Could not find email associated with this username.', type: 'error' });
             setLoading(false);
@@ -62,13 +67,8 @@ const LoginPage = () => {
         }
       }
 
-      const methods = await fetchSignInMethodsForEmail(auth, resolvedEmail);
-      if (methods.length === 0) {
-        setNotification({ message: 'No account found with this email. Please sign up or check your details.', type: 'error' });
-        setLoading(false);
-        return;
-      }
-      
+      // Directly set email for auth and proceed to password step.
+      // The actual check if the user exists will happen during signInWithEmailAndPassword.
       setEmailForAuth(resolvedEmail);
       setStep(2);
     } catch (err) {
@@ -106,9 +106,12 @@ const LoginPage = () => {
       navigate('/');
     } catch (err) {
       console.error('Login error:', err);
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        setNotification({ message: 'Invalid password or email. Please try again.', type: 'error' });
-      } else if (err.code === 'auth/too-many-requests'){
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
+        setNotification({ message: 'No account found with this email. Please sign up or check your details.', type: 'error' });
+        setStep(1); // Go back to identifier step if user not found
+      } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setNotification({ message: 'Incorrect password. Please try again.', type: 'error' });
+      } else if (err.code === 'auth/too-many-requests'){ני
         setNotification({ message: 'Too many login attempts. Please try again later or reset your password.', type: 'error' });
       } else {
         setNotification({ message: 'Failed to login. Please try again.', type: 'error' });

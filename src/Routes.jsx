@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import ProfilePage from './pages/ProfilePage'; // Import ProfilePage
 import AuthRedirect from './components/AuthRedirect'; // Import AuthRedirect
 
 const AppRoutes = () => {
@@ -35,6 +36,14 @@ const AppRoutes = () => {
       />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route 
+        path="/profile" 
+        element={
+          <AuthRedirect requireAuth>
+            <ProfilePage />
+          </AuthRedirect>
+        }
+      />
       {/* Add other routes here */}
     </Routes>
   );

@@ -1,10 +1,14 @@
-import React, { useState, useCallback } from 'react';
+// This import will be replaced by the one above that includes useRef
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiXCircle, FiFileText, FiArrowUp, FiArrowDown, FiTrash2 } from 'react-icons/fi';
 import Modal from '../components/Modal'; // Import the Modal component
 
+import React, { useState, useCallback, useRef } from 'react'; // Added useRef
+
 function PdfMerge() {
+  const fileInputRef = useRef(null); // Added fileInputRef declaration
   const [files, setFiles] = useState([]);
+  const [isDragging, setIsDragging] = useState(false); // Added isDragging state
   const [dragOver, setDragOver] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
@@ -35,12 +39,14 @@ function PdfMerge() {
   const handleDragEnter = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
+    setDragOver(true); // Use dragOver for visual feedback during hover
+    setIsDragging(true); // Keep isDragging for broader drag state if needed elsewhere or for logic
   };
 
   const handleDragLeave = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setDragOver(false);
     setIsDragging(false);
   };
 
@@ -52,6 +58,7 @@ function PdfMerge() {
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setDragOver(false);
     setIsDragging(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -88,9 +95,10 @@ function PdfMerge() {
       return;
     }
 
+    let mergedPdf;
     try {
       const { PDFDocument } = await import('pdf-lib');
-    const mergedPdf = await PDFDocument.create();
+      mergedPdf = await PDFDocument.create();
 
     for (const fileObj of files) {
       const arrayBuffer = await fileObj.file.arrayBuffer();
@@ -108,6 +116,17 @@ function PdfMerge() {
     setModalOpen(true);
     return; // Stop the process if an error occurs
   }
+
+    if (!mergedPdf) { // Check if mergedPdf was initialized
+      console.error('Error: mergedPdf is not initialized.');
+      setModalConfig({
+        title: 'Merge Error',
+        message: 'An unexpected error occurred during PDF merge. Please try again.',
+        type: 'error',
+      });
+      setModalOpen(true);
+      return;
+    }
 
     const mergedPdfBytes = await mergedPdf.save();
 
@@ -173,7 +192,7 @@ function PdfMerge() {
 
       <div className="card p-6 mb-8">
         <div 
-          className={`upload-zone ${isDragging ? 'active' : ''}`}
+          className={`upload-zone ${dragOver ? 'active' : ''}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}

@@ -7,7 +7,7 @@ function PdfToImage() {
   const [pdfFile, setPdfFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [imageFormat, setImageFormat] = useState('jpg');
-  const [imageQuality, setImageQuality] = useState(90);
+  // const [imageQuality, setImageQuality] = useState(90); // Removed as per user request
   const [dragOver, setDragOver] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
@@ -80,7 +80,7 @@ function PdfToImage() {
       // User should adjust this based on their project's asset handling.
       if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
         // Using a specific version for stability. Match this with your installed pdfjs-dist version.
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.3.31/build/pdf.worker.mjs`;
       }
 
       const arrayBuffer = await pdfFile.arrayBuffer();
@@ -113,10 +113,9 @@ function PdfToImage() {
         await page.render(renderContext).promise;
 
         const mimeType = `image/${actualFormatForConversion === 'jpg' ? 'jpeg' : actualFormatForConversion}`;
-        const qualitySetting = imageQuality / 100;
-        // Quality argument is primarily for 'image/jpeg' and 'image/webp'
-        const qualityArgument = (actualFormatForConversion === 'jpg' || actualFormatForConversion === 'webp') ? qualitySetting : undefined;
-        const imageDataUrl = canvas.toDataURL(mimeType, qualityArgument);
+        // Quality argument removed to aim for original/best quality. 
+        // For JPG/WEBP, browser default is typically high. PNG is lossless.
+        const imageDataUrl = canvas.toDataURL(mimeType);
         
         // Use the user-selected imageFormat for the filename extension
         zip.file(`page_${i}.${imageFormat}`, imageDataUrl.split(',')[1], { base64: true });
@@ -270,25 +269,7 @@ function PdfToImage() {
                   <option value="tiff">TIFF</option>
                 </select>
               </div>
-              
-              <div>
-                <label htmlFor="imageQuality" className="block text-sm font-medium text-gray-300 mb-2">
-                  Image Quality: {imageQuality}%
-                </label>
-                <input
-                  type="range"
-                  id="imageQuality"
-                  min="10"
-                  max="100"
-                  value={imageQuality}
-                  onChange={(e) => setImageQuality(parseInt(e.target.value))}
-                  className="w-full h-2 bg-dark-border rounded-md appearance-none cursor-pointer"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Lower Quality</span>
-                  <span>Higher Quality</span>
-                </div>
-              </div>
+              {/* Image Quality settings removed as per user request */}
               
               <div className="pt-4">
                 <button 
@@ -309,7 +290,7 @@ function PdfToImage() {
             </p>
             <ul className="text-gray-400 space-y-2 list-disc pl-5">
               <li>Convert PDF pages to JPG, PNG, WEBP, or TIFF</li>
-              <li>Adjust image quality to balance size and clarity</li>
+              <li>Aims for original image quality</li>
               <li>Process multi-page PDF documents</li>
               <li>Download all images as a ZIP file</li>
             </ul>
@@ -334,7 +315,7 @@ function PdfToImage() {
               <span className="text-lg font-bold">2</span>
             </div>
             <h3 className="text-lg font-medium text-white mb-2">Choose Settings</h3>
-            <p className="text-gray-400">Select your preferred image format and quality settings.</p>
+            <p className="text-gray-400">Select your preferred image format.</p>
           </div>
           
           <div className="flex flex-col items-center text-center">

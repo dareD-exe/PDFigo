@@ -1,15 +1,17 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiXCircle, FiFileText, FiImage } from 'react-icons/fi';
 import Modal from '../components/Modal'; // Import the Modal component
 
 function ImageToPdf() {
   const [files, setFiles] = useState([]); // Stores {file, id, preview}
+  const [isDragging, setIsDragging] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
   const [downloadFileName, setDownloadFileName] = useState('converted-images.pdf');
   const fileInputRef = useRef(null);
+  // Removed imageFormat and imageQuality states as per user request to simplify settings
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -35,12 +37,14 @@ function ImageToPdf() {
   const handleDragEnter = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
+    setDragOver(true); // Use dragOver for visual feedback during hover
+    setIsDragging(true); // Keep isDragging for broader drag state if needed elsewhere or for logic
   };
 
   const handleDragLeave = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setDragOver(false);
     setIsDragging(false);
   };
 
@@ -52,6 +56,7 @@ function ImageToPdf() {
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setDragOver(false);
     setIsDragging(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -113,7 +118,10 @@ function ImageToPdf() {
                 pdf.addPage();
               }
               // Add the image (or its first part)
-              pdf.addImage(imgData, 'JPEG', 10, currentPdfYPosition, pdfImageWidth, scaledImageHeight);
+              const imageType = imageFileToProcess.type.split('/')[1].toUpperCase();
+              // For JPEG, 'FAST' provides good quality. For other types, jsPDF handles them.
+              const compression = imageType === 'JPEG' ? 'FAST' : 'NONE'; // Use 'NONE' for non-JPEGs or if lossless is critical
+              pdf.addImage(imgData, imageType, 10, currentPdfYPosition, pdfImageWidth, scaledImageHeight, undefined, compression);
               heightLeft -= pdfPageUsableHeight; // Subtract the height that fit on this page
 
               // If the image is taller than what fits on one page (within usable height)
@@ -122,7 +130,9 @@ function ImageToPdf() {
                 // This makes the previously hidden part of the image visible at the top of the new page
                 currentPdfYPosition = heightLeft - scaledImageHeight + 10;
                 pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', 10, currentPdfYPosition, pdfImageWidth, scaledImageHeight);
+                const imageTypeLoop = imageFileToProcess.type.split('/')[1].toUpperCase();
+                const compressionLoop = imageTypeLoop === 'JPEG' ? 'FAST' : 'NONE';
+                pdf.addImage(imgData, imageTypeLoop, 10, currentPdfYPosition, pdfImageWidth, scaledImageHeight, undefined, compressionLoop);
                 heightLeft -= pdfPageUsableHeight;
               }
               resolve();
@@ -194,7 +204,7 @@ function ImageToPdf() {
 
       <div className="card p-6 mb-8">
         <div 
-          className={`upload-zone ${isDragging ? 'active' : ''}`}
+          className={`upload-zone ${dragOver ? 'active' : ''}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -249,12 +259,14 @@ function ImageToPdf() {
             ))}
           </div>
 
-          <div className="mt-6 flex justify-end">
-            <button 
+          {/* Conversion settings UI removed as per user request. Retaining only the convert button. */}
+          <div className="mt-8 flex justify-end">
+            <button
               onClick={handleConvertToPdf}
-              className="btn-primary"
-              disabled={files.length === 0}
+              className="btn btn-primary"
+              disabled={files.length === 0} /* Retained disabled logic */
             >
+              <FiFileText className="mr-2" /> {/* Retained icon */}
               Convert to PDF
             </button>
           </div>

@@ -79,7 +79,7 @@ function App() {
       <div className="min-h-screen bg-dark-bg text-white flex flex-col">
         {/* Navbar - apply 'sticky' class from App.css for blur */}
         {/* Router is now expected to be in main.jsx wrapping this App component */}
-        <nav className="bg-dark-card/80 border-b border-dark-border sticky top-0 z-50 nav-sticky">
+        <nav className="bg-dark-card/80 border-b border-dark-border sticky top-0 z-50 nav-sticky backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <Link to="/" className="flex-shrink-0 flex items-center">
@@ -126,14 +126,28 @@ function App() {
                     </button>
                     {isUserDropdownOpen && (
                       <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-dark-card/90 backdrop-blur-md ring-1 ring-black ring-opacity-5 border border-dark-border/50">
-                        {/* <NavLink to="/profile" className={({ isActive }) => `block px-4 py-2 text-sm ${isActive ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-dark-hover hover:text-white'}`} onClick={() => setIsUserDropdownOpen(false)}>
-                          <FiUser className="inline mr-2" /> Profile
-                        </NavLink> */}
+                        <Link
+                          to="/profile"
+                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors duration-150 ease-in-out"
+                          role="menuitem"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                        {/* <Link
+                          to="/settings" // Placeholder, adjust as needed
+                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors duration-150 ease-in-out"
+                          role="menuitem"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          Settings
+                        </Link> */}
                         <button
                           onClick={handleLogout}
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-red-600 hover:text-white transition-colors"
+                          className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 rounded-md transition-colors duration-150 ease-in-out"
+                          role="menuitem"
                         >
-                          <FiLogOut className="mr-2" /> Logout
+                          Logout
                         </button>
                       </div>
                     )}
