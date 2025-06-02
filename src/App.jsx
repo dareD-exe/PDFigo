@@ -5,7 +5,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import { auth } from './firebase'; // Import Firebase auth
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { FiChevronDown, FiTool, FiImage, FiFileText, FiGitMerge, FiGithub, FiLinkedin, FiTwitter, FiLogIn, FiUserPlus, FiGrid, FiLogOut, FiUser, FiMenu, FiX } from 'react-icons/fi'; // Added FiMenu, FiX
+import { FiChevronDown, FiTool, FiImage, FiFileText, FiGitMerge, FiGithub, FiLinkedin, FiTwitter, FiLogIn, FiUserPlus, FiGrid, FiLogOut, FiUser, FiMenu, FiX, FiHome } from 'react-icons/fi'; // Added FiMenu, FiX, FiHome
 
 // Pages
 // Route components are now centralized in Routes.jsx
