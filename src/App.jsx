@@ -1,34 +1,24 @@
-import { useState, useEffect, useRef } from 'react'; // Added useRef
-import { BrowserRouter as Router, Routes, Route, Link, NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, NavLink } from 'react-router-dom'; // Removed BrowserRouter, Routes, Route, useNavigate as they are handled elsewhere or not directly needed here
 import './App.css';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
+// LoginPage and SignupPage imports are not needed here as they are handled by AppRoutes
 import { auth } from './firebase'; // Import Firebase auth
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { FiChevronDown, FiTool, FiImage, FiFileText, FiGitMerge, FiGithub, FiLinkedin, FiTwitter, FiLogIn, FiUserPlus, FiGrid, FiLogOut, FiUser, FiMenu, FiX, FiHome } from 'react-icons/fi'; // Added FiMenu, FiX, FiHome
-
-// Pages
-// Route components are now centralized in Routes.jsx
+import { signOut } from 'firebase/auth'; // onAuthStateChanged is now in AuthContext
+import { FiChevronDown, FiTool, FiImage, FiFileText, FiGitMerge, FiLogIn, FiUserPlus, FiGrid, FiLogOut, FiUser, FiMenu, FiX, FiHome } from 'react-icons/fi'; 
 import AppRoutes from './Routes'; // Import the new centralized routes
+import { useAuth } from './contexts/AuthContext'; // Import useAuth
 
-function App() { // Removed navigate prop
+function App() {
   const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+  const { currentUser, loadingAuth } = useAuth(); // Use context
 
   const toolsDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setLoadingAuth(false);
-    });
-    return () => unsubscribe();
-  }, []);
+  // useEffect for onAuthStateChanged is removed as it's handled by AuthProvider
 
   const toggleToolsDropdown = () => setIsToolsDropdownOpen(!isToolsDropdownOpen);
   const toggleUserDropdown = () => setIsUserDropdownOpen(!isUserDropdownOpen);
@@ -65,9 +55,15 @@ function App() { // Removed navigate prop
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  if (loadingAuth) {
-    return <div className="min-h-screen bg-dark-bg flex items-center justify-center text-white text-xl">Loading PDFigo...</div>;
-  }
+  // loadingAuth state is now handled by AuthProvider, App component will only render when not loadingAuth
+  // However, a top-level loading indicator in App might still be useful if AuthProvider's children render before auth state is resolved.
+  // For now, assuming AuthProvider handles this correctly by not rendering children until auth is resolved.
+  // If a flicker occurs, we might need to re-introduce a loading check here or ensure AuthProvider delays children rendering.
+
+  // if (loadingAuth) { // This check might still be useful depending on AuthProvider behavior
+  //   return <div className="min-h-screen bg-dark-bg flex items-center justify-center text-white text-xl">Loading PDFigo...</div>;
+  // }
+
 
   const navLinkClasses = ({ isActive }) =>
     `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out ${

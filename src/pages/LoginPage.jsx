@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiLogIn } from 'react-icons/fi';
-import { auth, db } from '../firebase'; // Import Firebase auth and db
+import { FiUser, FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiLogIn, FiLoader } from 'react-icons/fi'; // Added FiLoader
+import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import Notification from '../components/Notification'; // Import Notification
 
 const LoginPage = () => {
   const [step, setStep] = useState(1); // 1 for identifier, 2 for password
@@ -11,75 +12,73 @@ const LoginPage = () => {
     identifier: '', // Username or Email
     password: '',
   });
-  const [error, setError] = useState('');
+  const [notification, setNotification] = useState({ message: '', type: '' }); // For Notification component
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [emailForAuth, setEmailForAuth] = useState(''); // Store the resolved email for step 2
+  const [emailForAuth, setEmailForAuth] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(''); // Clear error on change
+    setNotification({ message: '', type: '' }); // Clear notification on change
   };
 
   const handleIdentifierSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setNotification({ message: '', type: '' });
     if (!formData.identifier) {
-      setError('Please enter your email or username.');
+      setNotification({ message: 'Please enter your email or username.', type: 'error' });
       setLoading(false);
       return;
     }
 
     try {
-      const isEmail = formData.identifier.includes('@');
-      let resolvedEmail = formData.identifier;
+      const identifierInput = formData.identifier.trim();
+      const isEmail = identifierInput.includes('@');
+      let resolvedEmail = isEmail ? identifierInput.toLowerCase() : '';
 
-      if (isEmail && !/\S+@\S+\.\S+/.test(formData.identifier)) {
-        setError('Please enter a valid email address.');
+      if (isEmail && !/\S+@\S+\.\S+/.test(identifierInput)) {
+        setNotification({ message: 'Please enter a valid email address.', type: 'error' });
         setLoading(false);
         return;
       }
 
       if (!isEmail) {
-        // If not an email, assume it's a username and try to find the email in Firestore
         const usersRef = collection(db, 'users');
-        // Ensure username is queried in lowercase if stored that way during signup
-        const q = query(usersRef, where('username', '==', formData.identifier.toLowerCase())); 
+        const q = query(usersRef, where('username', '==', identifierInput.toLowerCase()));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-          setError('Username not found. Please check your username or try with email.');
+          setNotification({ message: 'Username not found. Please check your username or try with email.', type: 'error' });
           setLoading(false);
           return;
         }
         resolvedEmail = querySnapshot.docs[0].data().email;
         if (!resolvedEmail) {
-            setError('Could not find email associated with this username.');
+            setNotification({ message: 'Could not find email associated with this username.', type: 'error' });
             setLoading(false);
             return;
         }
       }
 
-      // Verify if the resolved email is registered in Firebase Auth
       const methods = await fetchSignInMethodsForEmail(auth, resolvedEmail);
       if (methods.length === 0) {
-        setError('No account found with this email. Please sign up or check your details.');
+        setNotification({ message: 'No account found with this email. Please sign up or check your details.', type: 'error' });
         setLoading(false);
         return;
       }
       
-      setEmailForAuth(resolvedEmail); // Store resolved email for the password step
+      setEmailForAuth(resolvedEmail);
       setStep(2);
     } catch (err) {
       console.error('Identifier check error:', err);
       if (err.code === 'auth/invalid-email') {
-        setError('Invalid email format provided.');
-      } else if (err.code === 'firebase/failed-precondition' || err.code === 'unavailable') { 
-        setError('Error querying database. Please check your connection or try again.');
+        setNotification({ message: 'Invalid email format provided.', type: 'error' });
+      } else if (err.message.includes('network')) { // More generic network error check
+        setNotification({ message: 'Network error. Please check your connection and try again.', type: 'error' });
       } else {
-        setError('Failed to verify your account. Please try again.');
+        setNotification({ message: 'Failed to verify your account. Please try again.', type: 'error' });
       }
     }
     setLoading(false);
@@ -88,31 +87,31 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setNotification({ message: '', type: '' });
     if (!formData.password) {
-      setError('Please enter your password.');
+      setNotification({ message: 'Please enter your password.', type: 'error' });
       setLoading(false);
       return;
     }
-    if (!emailForAuth) { // This check ensures email was resolved in step 1
-        setError('An unexpected error occurred. Please go back and re-enter your email/username.');
+    if (!emailForAuth) {
+        setNotification({ message: 'An unexpected error occurred. Please go back and re-enter your email/username.', type: 'error' });
         setLoading(false);
-        setStep(1); // Reset to step 1
+        setStep(1);
         return;
     }
 
     try {
       await signInWithEmailAndPassword(auth, emailForAuth, formData.password);
-      // console.log('User logged in successfully');
-      navigate('/'); // Redirect to home or dashboard
+      // No need for success notification here, navigation to '/' implies success.
+      navigate('/');
     } catch (err) {
       console.error('Login error:', err);
       if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        setError('Invalid password. Please try again.'); // More specific error for password step
+        setNotification({ message: 'Invalid password or email. Please try again.', type: 'error' });
       } else if (err.code === 'auth/too-many-requests'){
-        setError('Too many login attempts. Please try again later or reset your password.');
+        setNotification({ message: 'Too many login attempts. Please try again later or reset your password.', type: 'error' });
       } else {
-        setError('Failed to login. Please try again.');
+        setNotification({ message: 'Failed to login. Please try again.', type: 'error' });
       }
     }
     setLoading(false);
@@ -121,13 +120,19 @@ const LoginPage = () => {
   // Effect to clear password when identifier changes (user goes back to step 1)
   useEffect(() => {
     if (step === 1) {
-      setFormData(prev => ({ ...prev, password: '' })); // Clear password field
-      setEmailForAuth(''); // Clear resolved email
+      setFormData(prev => ({ ...prev, password: '' }));
+      setEmailForAuth('');
+      // setNotification({ message: '', type: '' }); // Also clear notification when going back to step 1
     }
   }, [step]);
 
   return (
     <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-center p-4 selection:bg-primary-500 selection:text-white">
+      <Notification 
+        message={notification.message} 
+        type={notification.type} 
+        onClose={() => setNotification({ message: '', type: '' })} 
+      />
       <div className="w-full max-w-md bg-dark-card shadow-2xl rounded-xl p-8 space-y-8 transform transition-all duration-500 hover:scale-105">
         <div className="text-center">
           <Link to="/" className="inline-block mb-6">
@@ -137,11 +142,13 @@ const LoginPage = () => {
           <p className="mt-3 text-gray-400">Login to access your PDFigo dashboard.</p>
         </div>
 
-        {error && (
+        {/* Error messages are now handled by the Notification component or inline for specific fields if needed */}
+        {/* This global error display can be removed if inline/Notification is sufficient */}
+        {/* {notification.message && notification.type === 'error' && (
           <div className="bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm" role="alert">
-            <p>{error}</p>
+            <p>{notification.message}</p>
           </div>
-        )}
+        )} */}
 
         {step === 1 && (
           <form onSubmit={handleIdentifierSubmit} className="space-y-6">
@@ -197,10 +204,10 @@ const LoginPage = () => {
                 </label>
                 <button 
                     type="button"
-                    onClick={() => { setStep(1); setError(''); }}
-                    className="text-xs text-primary-400 hover:text-primary-300 focus:outline-none"
+                    onClick={() => { setStep(1); setNotification({ message: '', type: '' }); }}
+                    className="text-sm text-primary-500 hover:text-primary-400 hover:underline focus:outline-none"
                 >
-                    Change identifier?
+                  Change email/username
                 </button>
               </div>
               <div className="relative rounded-md shadow-sm">
@@ -233,12 +240,10 @@ const LoginPage = () => {
                 className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 focus:ring-offset-dark-bg transition-transform transform hover:scale-105 duration-300 ease-out disabled:opacity-60 disabled:cursor-not-allowed"
               >
                  {loading ? (
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                ) : 'Login'}
-                <FiLogIn className={`ml-2 h-5 w-5 ${loading ? 'hidden' : ''}`} />
+                  <FiLoader className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                ) : null}
+                Log In
+                {!loading && <FiLogIn className="ml-2 h-5 w-5" />}
               </button>
             </div>
           </form>

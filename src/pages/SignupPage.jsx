@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiMail, FiUser, FiCalendar, FiLock, FiArrowRight, FiEye, FiEyeOff, FiUserPlus } from 'react-icons/fi';
-import { auth, db } from '../firebase'; // Import Firebase auth and db
+import { FiMail, FiUser, FiCalendar, FiLock, FiArrowRight, FiEye, FiEyeOff, FiUserPlus, FiLoader } from 'react-icons/fi'; // Added FiLoader
+import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { setDoc, doc } from 'firebase/firestore';
+import { setDoc, doc, query, collection, where, getDocs } from 'firebase/firestore'; // Added query, collection, where, getDocs
+import Notification from '../components/Notification'; // Import Notification
 
 const SignupPage = () => {
   const [step, setStep] = useState(1);
@@ -14,40 +15,48 @@ const SignupPage = () => {
     username: '',
     password: '',
   });
-  const [error, setError] = useState('');
+  const [notification, setNotification] = useState({ message: '', type: '' }); // Added notification state
+  const [isLoading, setIsLoading] = useState(false); // Added isLoading state
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setNotification({ message: '', type: '' }); // Clear notification on change
+  };
+
+  // Function to check if username is already taken
+  const isUsernameTaken = async (username) => {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('username', '==', username.toLowerCase()));
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
   };
 
   const validateStep = () => {
     switch (step) {
       case 1: // Email
         if (!formData.email) {
-          setError('Please enter your email address.');
+          setNotification({ message: 'Please enter your email address.', type: 'error' });
           return false;
         }
         if (!/\S+@\S+\.\S+/.test(formData.email)) {
-          setError('Please enter a valid email address.');
+          setNotification({ message: 'Please enter a valid email address.', type: 'error' });
           return false;
         }
-        // In a real app, check if email is already taken
+        // Email existence is checked by Firebase during createUserWithEmailAndPassword
         break;
       case 2: // Full Name
         if (!formData.fullName) {
-          setError('Please enter your full name.');
+          setNotification({ message: 'Please enter your full name.', type: 'error' });
           return false;
         }
         break;
       case 3: // Date of Birth
         if (!formData.dob) {
-          setError('Please enter your date of birth.');
+          setNotification({ message: 'Please enter your date of birth.', type: 'error' });
           return false;
         }
-        // Basic age validation (e.g., must be 13+)
         const today = new Date();
         const birthDate = new Date(formData.dob);
         let age = today.getFullYear() - birthDate.getFullYear();
@@ -56,87 +65,105 @@ const SignupPage = () => {
             age--;
         }
         if (age < 13) {
-            setError('You must be at least 13 years old to sign up.');
+            setNotification({ message: 'You must be at least 13 years old to sign up.', type: 'error' });
             return false;
         }
         break;
       case 4: // Username
         if (!formData.username) {
-          setError('Please enter a username.');
+          setNotification({ message: 'Please enter a username.', type: 'error' });
           return false;
         }
         if (formData.username.length < 3) {
-          setError('Username must be at least 3 characters long.');
+          setNotification({ message: 'Username must be at least 3 characters long.', type: 'error' });
           return false;
         }
-        // In a real app, check if username is already taken
+        // Username uniqueness will be checked before submitting in handleNextStep or handleSignup
         break;
       case 5: // Password
         if (!formData.password) {
-          setError('Please enter a password.');
+          setNotification({ message: 'Please enter a password.', type: 'error' });
           return false;
         }
         if (formData.password.length < 8) {
-          setError('Password must be at least 8 characters long.');
+          setNotification({ message: 'Password must be at least 8 characters long.', type: 'error' });
           return false;
         }
-        // Add more password strength checks if needed (e.g., uppercase, number, symbol)
         break;
       default:
         return true;
     }
-    setError('');
+    setNotification({ message: '', type: '' }); // Clear notification if all good for current step
     return true;
   };
 
-  const handleNextStep = (e) => {
+  const handleNextStep = async (e) => {
     e.preventDefault();
-    if (validateStep()) {
-      setStep(step + 1);
+    if (!validateStep()) return;
+
+    if (step === 4) { // Check username uniqueness before proceeding from username step
+      setIsLoading(true);
+      const taken = await isUsernameTaken(formData.username);
+      setIsLoading(false);
+      if (taken) {
+        setNotification({ message: 'This username is already taken. Please choose another.', type: 'error' });
+        return;
+      }
     }
+    setStep(step + 1);
   };
 
   const handlePreviousStep = () => {
-    setError('');
+    setNotification({ message: '', type: '' });
     setStep(step - 1);
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (validateStep()) {
-      setError(''); // Clear previous errors
-      try {
-        // Create user with email and password
-        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-        const user = userCredential.user;
+    if (!validateStep()) return;
 
-        // Store additional user details in Firestore
-        // Use user.uid as the document ID
-        await setDoc(doc(db, "users", user.uid), {
-          uid: user.uid,
-          email: formData.email,
-          fullName: formData.fullName,
-          dob: formData.dob,
-          username: formData.username,
-          createdAt: new Date().toISOString(), // Optional: store creation timestamp
-        });
+    setIsLoading(true);
+    setNotification({ message: '', type: '' });
 
-        console.log('Signup successful, user created:', user);
-        alert('Signup Successful! Please login.'); // Replace with modal later if needed
+    // Final check for username uniqueness before creating account
+    const usernameTaken = await isUsernameTaken(formData.username);
+    if (usernameTaken) {
+      setNotification({ message: 'This username is already taken. Please choose another.', type: 'error' });
+      setIsLoading(false);
+      setStep(4); // Go back to username step
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email.toLowerCase(), formData.password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: formData.email.toLowerCase(),
+        fullName: formData.fullName,
+        dob: formData.dob,
+        username: formData.username.toLowerCase(), // Store username in lowercase
+        createdAt: new Date().toISOString(),
+      });
+
+      setNotification({ message: 'Signup Successful! Redirecting to login...', type: 'success' });
+      setTimeout(() => {
         navigate('/login');
+      }, 2000); // Delay for user to see success message
 
-      } catch (error) {
-        console.error('Error signing up:', error);
-        // Handle Firebase errors (e.g., email-already-in-use, weak-password)
-        if (error.code === 'auth/email-already-in-use') {
-          setError('This email address is already in use. Please use a different email or login.');
-        } else if (error.code === 'auth/weak-password') {
-          setError('The password is too weak. Please choose a stronger password.');
-        } else {
-          setError('Failed to create account. Please try again. ' + error.message);
-        }
+    } catch (err) {
+      console.error('Error signing up:', err);
+      if (err.code === 'auth/email-already-in-use') {
+        setNotification({ message: 'This email address is already in use. Please use a different email or login.', type: 'error' });
+        setStep(1); // Go back to email step
+      } else if (err.code === 'auth/weak-password') {
+        setNotification({ message: 'The password is too weak. Please choose a stronger password.', type: 'error' });
+      } else {
+        setNotification({ message: 'Failed to create account. Please try again. ' + err.message, type: 'error' });
       }
     }
+    setIsLoading(false);
   };
 
   const renderStep = () => {
@@ -222,7 +249,12 @@ const SignupPage = () => {
         return (
           <>
             <h2 className="text-2xl font-bold text-white mb-1">Choose a username</h2>
-            <p className="text-gray-400 mb-6 text-sm">This will be your unique identifier on PDFigo.</p>
+            <p className="text-gray-400 mb-6 text-sm">Choose something unique and memorable.</p>
+            {notification.message && notification.type === 'error' && step === 4 && (
+              <div className="mb-4 text-sm text-red-400 bg-red-500/10 p-3 rounded-md border border-red-500/30">
+                {notification.message}
+              </div>
+            )}
             <div>
               <label htmlFor="username" className="sr-only">Username</label>
               <div className="relative rounded-md shadow-sm">
@@ -248,7 +280,12 @@ const SignupPage = () => {
         return (
           <>
             <h2 className="text-2xl font-bold text-white mb-1">Set a secure password</h2>
-            <p className="text-gray-400 mb-6 text-sm">Make sure it's at least 8 characters long.</p>
+            <p className="text-gray-400 mb-6 text-sm">Make sure it's strong and secure.</p>
+            {notification.message && notification.type === 'error' && step === 5 && (
+              <div className="mb-4 text-sm text-red-400 bg-red-500/10 p-3 rounded-md border border-red-500/30">
+                {notification.message}
+              </div>
+            )}
             <div>
               <label htmlFor="password" className="sr-only">Password</label>
               <div className="relative rounded-md shadow-sm">
@@ -282,51 +319,59 @@ const SignupPage = () => {
 
   return (
     <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-center p-4 selection:bg-primary-500 selection:text-white">
-      <div className="w-full max-w-md bg-dark-card shadow-2xl rounded-xl p-8 space-y-8 transform transition-all duration-500 hover:scale-105">
+      <div className="w-full max-w-lg bg-dark-card shadow-2xl rounded-xl p-8 md:p-12 space-y-8 transform transition-all duration-500 hover:scale-[1.02]">
+        <Notification 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification({ message: '', type: '' })} 
+        />
         <div className="text-center">
           <Link to="/" className="inline-block mb-6">
-            <svg className="h-12 w-auto text-primary-500 mx-auto" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 18H17V16H7V18Z" fill="currentColor" /><path d="M17 14H7V12H17V14Z" fill="currentColor" /><path d="M7 10H11V8H7V10Z" fill="currentColor" /><path fillRule="evenodd" clipRule="evenodd" d="M6 2C4.34315 2 3 3.34315 3 5V19C3 20.6569 4.34315 22 6 22H18C19.6569 22 21 20.6569 21 19V9C21 5.13401 17.866 2 14 2H6ZM6 4H13V9H19V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V5C5 4.44772 5.44772 4 6 4ZM15 4.10002C16.6113 4.4271 17.9413 5.52906 18.584 7H15V4.10002Z" fill="currentColor" /></svg>
+            <FiUserPlus className="h-12 w-auto text-primary-500 mx-auto" />
           </Link>
           <h1 className="text-4xl font-extrabold text-white tracking-tight">Create your PDFigo Account</h1>
+          <p className="mt-3 text-gray-400">Join us and manage your PDFs like a pro.</p>
         </div>
 
-        {error && (
-          <div className="bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm" role="alert">
-            <p>{error}</p>
-          </div>
-        )}
+        {/* Progress Bar */}
+        <div className="w-full bg-dark-input rounded-full h-2.5 mb-8">
+          <div className="bg-primary-500 h-2.5 rounded-full transition-all duration-300 ease-out" style={{ width: `${(step / 5) * 100}%` }}></div>
+        </div>
+
+        {/* Step-specific error messages are now rendered within renderStep() */}
 
         <form onSubmit={step < 5 ? handleNextStep : handleSignup} className="space-y-6">
           {renderStep()}
-
-          <div className={`flex ${step > 1 ? 'justify-between' : 'justify-end'} items-center pt-2`}>
+          <div className="flex items-center justify-between pt-4">
             {step > 1 && (
               <button
                 type="button"
                 onClick={handlePreviousStep}
-                className="px-4 py-2 border border-dark-border rounded-lg text-sm font-medium text-gray-300 hover:bg-dark-input focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 focus:ring-offset-dark-bg transition-colors"
+                disabled={isLoading}
+                className="px-6 py-3 border border-dark-border rounded-lg text-sm font-medium text-gray-300 hover:bg-dark-hover hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 focus:ring-offset-dark-bg transition-colors duration-150 disabled:opacity-50"
               >
                 Back
               </button>
             )}
             <button
               type="submit"
-              className="flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 focus:ring-offset-dark-bg transition-transform transform hover:scale-105 duration-300 ease-out"
+              disabled={isLoading}
+              className={`ml-auto flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 focus:ring-offset-dark-bg transition-transform transform hover:scale-105 duration-300 ease-out ${step === 1 ? 'w-full' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              {step < 5 ? 'Next' : 'Sign Up'} 
-              {step < 5 ? <FiArrowRight className="ml-2 h-5 w-5" /> : <FiUserPlus className="ml-2 h-5 w-5" />}
+              {isLoading && step === 5 ? (
+                <FiLoader className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+              ) : step < 5 ? 'Next' : 'Create Account'}
+              {!isLoading || step < 5 ? <FiArrowRight className="ml-2 inline-block h-5 w-5" /> : null}
             </button>
           </div>
         </form>
 
-        <div className="text-sm text-center">
-          <p className="text-gray-400">
-            Already have an account?{' '}
-            <Link to="/login" className="font-medium text-primary-400 hover:text-primary-300 transition-colors">
-              Log in here
-            </Link>
-          </p>
-        </div>
+        <p className="mt-8 text-center text-sm text-gray-400">
+          Already have an account?{' '}
+          <Link to="/login" className="font-medium text-primary-500 hover:text-primary-400 hover:underline">
+            Log in
+          </Link>
+        </p>
       </div>
     </div>
   );
