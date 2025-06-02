@@ -1,0 +1,22 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Import Tailwind CSS */
+@import "tailwindcss";
+
+/* Global styles */
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background-color: #121212; /* dark-bg */
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: white;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
