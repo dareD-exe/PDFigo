@@ -31,8 +31,8 @@ import { AuthProvider } from './contexts/AuthContext';
 const AppRoutes = () => {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/" element={<Home />} />
+    <Routes>
+      <Route path="/" element={<Home />} />
         <Route path="/tools" element={<ToolsPage />} />
         <Route path="/image-to-pdf" element={<AuthRedirect><ImageToPdf /></AuthRedirect>} />
         <Route path="/pdf-to-image" element={<AuthRedirect><PdfToImage /></AuthRedirect>} />
@@ -54,11 +54,11 @@ const AppRoutes = () => {
         <Route path="/add-image-signature" element={<AuthRedirect><AddImageSignature /></AuthRedirect>} />
         <Route path="/login" element={<AuthRedirect><LoginPage /></AuthRedirect>} />
         <Route path="/signup" element={<AuthRedirect><SignupPage /></AuthRedirect>} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/profile" element={<AuthRedirect><ProfilePage /></AuthRedirect>} />
         <Route path="/auth-redirect" element={<AuthRedirect />} />
-      </Routes>
+    </Routes>
     </AuthProvider>
   );
 };

@@ -180,10 +180,10 @@ const AddHeadersFooters = () => {
               {/* File Upload */}
               <div className="flex flex-col items-center justify-center">
                 <div className="w-full max-w-xl">
-                  <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-700/50 hover:bg-gray-700/70 transition-colors">
+                  <label className="flex flex-col items-center justify-center w-full h-40 sm:h-64 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-700/50 hover:bg-gray-700/70 transition-colors">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <FiUpload className="w-12 h-12 text-gray-400 mb-4" />
-                      <p className="mb-2 text-sm text-gray-400">
+                      <FiUpload className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mb-3 sm:mb-4" />
+                      <p className="mb-2 text-sm text-gray-400 text-center px-4">
                         <span className="font-semibold">Click to upload</span> or drag and drop
                       </p>
                       <p className="text-xs text-gray-500">PDF files only</p>
@@ -197,63 +197,72 @@ const AddHeadersFooters = () => {
                     />
                   </label>
                 </div>
-                {file && <p className="mt-4 text-gray-300">Selected file: <span className="font-semibold text-white">{file.name}</span></p>}
+                {file && <p className="mt-4 text-gray-300 text-center">Selected file: <span className="font-semibold text-white">{file.name}</span></p>}
               </div>
 
               {/* Text Input */}
+              {file && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-gray-700/30 rounded-xl p-4 sm:p-6 space-y-4"
+              >
+              <h3 className="text-lg font-semibold text-white text-center sm:text-left">Header/Footer Options</h3>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="header-text" className="block text-sm font-medium text-gray-300">Header Text:</label>
+                  <label htmlFor="header-text" className="block text-sm font-medium text-gray-400 mb-1">Header Text:</label>
                   <input
                     type="text"
                     id="header-text"
                     value={headerText}
                     onChange={(e) => setHeaderText(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Optional header text"
                   />
                 </div>
                 <div>
-                  <label htmlFor="footer-text" className="block text-sm font-medium text-gray-300">Footer Text:</label>
+                  <label htmlFor="footer-text" className="block text-sm font-medium text-gray-400 mb-1">Footer Text:</label>
                   <input
                     type="text"
                     id="footer-text"
                     value={footerText}
                     onChange={(e) => setFooterText(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Optional footer text"
                   />
                 </div>
               </div>
 
               {/* Options */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="font-size" className="block text-sm font-medium text-gray-300">Font Size:</label>
+                  <label htmlFor="font-size" className="block text-sm font-medium text-gray-400 mb-1">Font Size:</label>
                   <input
                     type="number"
                     id="font-size"
                     value={fontSize}
-                    onChange={(e) => setFontSize(parseInt(e.target.value))}
-                    className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    onChange={(e) => setFontSize(parseInt(e.target.value) || 1)}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     min="1"
                   />
                 </div>
                 <div>
-                  <label htmlFor="text-color" className="block text-sm font-medium text-gray-300">Text Color:</label>
+                  <label htmlFor="text-color" className="block text-sm font-medium text-gray-400 mb-1">Text Color:</label>
                   <input
                     type="color"
                     id="text-color"
                     value={textColor}
                     onChange={(e) => setTextColor(e.target.value)}
-                    className="mt-1 block w-full px-1 py-1 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full h-10 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div>
-                  <label htmlFor="placement" className="block text-sm font-medium text-gray-300">Placement:</label>
+                <div className="sm:col-span-2">
+                  <label htmlFor="placement" className="block text-sm font-medium text-gray-400 mb-1">Placement:</label>
                   <select
                     id="placement"
                     value={placement}
                     onChange={(e) => setPlacement(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="left">Left</option>
                     <option value="center">Center</option>
@@ -261,32 +270,64 @@ const AddHeadersFooters = () => {
                   </select>
                 </div>
               </div>
+              </motion.div>
+              )}
 
               {/* Error Message */}
               {error && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg"
+                  className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-center sm:text-left"
                 >
                   {error}
                 </motion.div>
               )}
 
-              {/* Action Button */}
-              {file && (
-                <div className="flex justify-center">
-                  <button
-                    onClick={handleAddHeadersFooters}
-                    disabled={!file || loading || (!headerText && !footerText)}
-                    className={`flex items-center px-8 py-3 rounded-xl font-medium transition-all ${
-                      !file || loading || (!headerText && !footerText)
-                        ? 'bg-gray-600 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700 hover:scale-105'
-                    }`}
-                  >
-                    {loading ? 'Adding...' : 'Add Headers & Footers'}
-                  </button>
+              {/* Action Buttons */}
+               {file && (!loading) && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+                <button
+                  onClick={handleAddHeadersFooters}
+                  disabled={!file || (!headerText && !footerText) || loading}
+                  className={`flex items-center px-6 py-3 rounded-xl font-medium transition-all ${
+                    !file || (!headerText && !footerText) || loading
+                      ? 'bg-gray-600 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700 hover:scale-105'
+                  }`}
+                >
+                  <FiDownload className="w-5 h-5 mr-2" />
+                  {loading ? 'Processing...' : 'Add Headers/Footers'}
+                </button>
+                <button
+                  onClick={clearFile}
+                  className="flex items-center px-6 py-3 rounded-xl font-medium bg-red-600 hover:bg-red-700 hover:scale-105 transition-all"
+                >
+                  <FiTrash2 className="w-5 h-5 mr-2" />
+                  Clear
+                </button>
+              </div>
+               )}
+              {/* Loading State */}
+              {file && loading && (
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+                    <button
+                       disabled={true}
+                       className="flex items-center px-6 py-3 rounded-xl font-medium transition-all bg-gray-600 cursor-not-allowed"
+                    >
+                       <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l2-2.647z"></path>
+                        </svg>
+                       Processing...
+                    </button>
+                     <button
+                       onClick={clearFile}
+                       className="flex items-center px-6 py-3 rounded-xl font-medium bg-red-600 hover:bg-red-700 hover:scale-105 transition-all"
+                     >
+                       <FiTrash2 className="w-5 h-5 mr-2" />
+                       Clear
+                    </button>
                 </div>
               )}
             </div>

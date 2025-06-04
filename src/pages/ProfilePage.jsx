@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FiUser, FiMail, FiEdit2, FiSave, FiCamera, FiLoader, FiX, FiPhone, FiMapPin, FiSettings, FiCalendar, FiClock } from 'react-icons/fi';
 import Notification from '../components/Notification';
@@ -45,42 +45,68 @@ const ProfilePage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      setLoading(true);
-      try {
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
-          const dbData = userDocSnap.data();
-          setUserData(dbData);
+      const fetchUserData = async () => {
+        setLoading(true);
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const dbData = userDocSnap.data();
+            setUserData(dbData);
           setEditableData({
-            fullName: dbData.fullName || '',
+            fullName: dbData.fullName || currentUser.displayName || '',
             username: dbData.username || '',
             dob: dbData.dob || '',
             mobile: dbData.mobile || '',
             location: dbData.location || '',
           });
-          setProfileImageUrl(dbData.profileImageUrl || '');
-        } else {
-          // User document doesn't exist (e.g., first time Google login)
-          setNotification({ message: 'User data not found in DB, using Google data.', type: 'info' }); // Info message
-          // Initialize state with data from currentUser
-          setUserData({}); // Set to empty object to indicate data fetch attempted
-          setEditableData({
+            setProfileImageUrl(dbData.profileImageUrl || currentUser.photoURL || '');
+          } else {
+          // User document doesn't exist (e.g., first time Google login or email/password signup without full profile creation yet)
+          setNotification({ message: 'Creating user data in DB.', type: 'info' }); // Info message
+          
+          const initialUserData = {
+            uid: currentUser.uid,
+            email: currentUser.email,
             fullName: currentUser.displayName || '',
-            username: '', // Google doesn't provide username
+            username: '', // Username is usually set during signup or later
+            createdAt: new Date().toISOString(),
+            profileImageUrl: currentUser.photoURL || '',
+            // Initialize other fields as empty or default
             dob: '',
             mobile: '',
             location: '',
+          };
+
+          await setDoc(userDocRef, initialUserData, { merge: true }); // Create document with initial data if it doesn't exist
+
+          setUserData(initialUserData);
+          setEditableData({
+            fullName: initialUserData.fullName,
+            username: initialUserData.username,
+            dob: initialUserData.dob,
+            mobile: initialUserData.mobile,
+            location: initialUserData.location,
           });
-          setProfileImageUrl(currentUser.photoURL || '');
-        }
-      } catch (error) {
-        setNotification({ message: 'Failed to load profile data.', type: 'error' });
+          setProfileImageUrl(initialUserData.profileImageUrl);
+
+          }
+        } catch (error) {
+          console.error("Error fetching or creating user data:", error);
+          setNotification({ message: 'Failed to load or initialize profile data.', type: 'error' });
         setUserData({}); // Still set userData to an empty object on error
-      }
-      setLoading(false);
-    };
+        } finally {
+        setLoading(false);
+        // After loading/initializing, check if profile is incomplete (e.g., missing username)
+        // and automatically open settings for first-time Google signups or incomplete profiles
+        if (currentUser && (!userData?.username && !editableData.username)) {
+          // Add a small delay to allow the page to render before the modal pops up
+          setTimeout(() => {
+            setSettingsOpen(true);
+          }, 100);
+        }
+        }
+      };
 
     if (currentUser) {
       fetchUserData();
@@ -109,14 +135,26 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setNotification({ message: 'You must be logged in to update your profile.', type: 'error' });
+      return;
+    }
+
     setSaving(true);
     setNotification({ message: '', type: '' });
-    const userDocRef = doc(db, 'users', currentUser.uid);
-    let dataToUpdate = {
-      ...editableData, // Save all editable fields
-    };
+    
     try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      let dataToUpdate = {
+        ...editableData,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Validate data before updating
+      if (dataToUpdate.username && dataToUpdate.username.length < 3) {
+        throw new Error('Username must be at least 3 characters long');
+      }
+
       // If a new image file was selected (not a preset)
       if (profileImage && !presetProfileImages.includes(profileImageUrl)) {
         const imageRef = ref(storage, `profile_images/${currentUser.uid}/${profileImage.name}`);
@@ -125,23 +163,35 @@ const ProfilePage = () => {
         dataToUpdate.profileImageUrl = downloadURL;
         setProfileImageUrl(downloadURL);
       } else if (profileImageUrl && presetProfileImages.includes(profileImageUrl)) {
-        // If a preset image was selected, save its URL directly
         dataToUpdate.profileImageUrl = profileImageUrl;
-      } else if (!profileImageUrl) {
-        // If no image is set (neither upload nor preset), potentially remove the field or set to default
-        // Depending on desired behavior, you might explicitly set it to null or a default avatar URL here
-        // delete dataToUpdate.profileImageUrl; // Option to remove if no image is selected
       }
 
-      await updateDoc(userDocRef, dataToUpdate);
-      setUserData(prev => ({ ...prev, ...dataToUpdate })); // Update userData to reflect changes
+      // Update the document using setDoc with merge: true
+      await setDoc(userDocRef, dataToUpdate, { merge: true });
+      
+      // Update local state
+      setUserData(prev => ({ ...prev, ...dataToUpdate }));
       setNotification({ message: 'Profile updated successfully.', type: 'success' });
       setProfileImage(null);
-      setSettingsOpen(false); // Close modal on successful save
+      setSettingsOpen(false);
     } catch (error) {
-      setNotification({ message: 'Failed to update profile.', type: 'error' });
+      console.error('Profile update error:', error);
+      let errorMessage = 'Failed to update profile. ';
+      
+      if (error.code === 'permission-denied') {
+        errorMessage += 'You do not have permission to update this profile.';
+      } else if (error.code === 'not-found') {
+        errorMessage += 'Profile document not found.';
+      } else if (error.code === 'unauthenticated') {
+        errorMessage += 'Please log in to update your profile.';
+      } else if (error.message) {
+        errorMessage += error.message;
+      }
+      
+      setNotification({ message: errorMessage, type: 'error' });
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const formatDate = (timestamp) => {
@@ -172,11 +222,11 @@ const ProfilePage = () => {
     <>
       <div className="min-h-screen flex flex-col relative overflow-hidden pt-32 px-4">
         <CosmicBackground />
-        <Notification 
-          message={notification.message} 
-          type={notification.type} 
-          onClose={() => setNotification({ message: '', type: '' })} 
-        />
+      <Notification 
+        message={notification.message} 
+        type={notification.type} 
+        onClose={() => setNotification({ message: '', type: '' })} 
+      />
 
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -203,11 +253,11 @@ const ProfilePage = () => {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="relative mb-4"
             >
-              <img
+            <img 
                 src={profileImageUrl || currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(editableData.fullName || userData?.fullName || currentUser.displayName || currentUser.email)}&background=0D8ABC&color=fff&size=128`}
-                alt="Profile"
+              alt="Profile" 
                 className="w-32 h-32 rounded-full object-cover border-4 border-blue-600 shadow-lg"
-              />
+            />
               {/* Image change handled in settings modal */}
             </motion.div>
 
@@ -353,18 +403,18 @@ const ProfilePage = () => {
                       className="w-full px-4 py-2 bg-gray-800/60 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
                       placeholder="Your name"
                     />
-                  </div>
+              </div>
                   <div>
                     <label className="block text-blue-300 text-sm font-medium mb-1">Username</label>
-                    <input
-                      type="text"
-                      name="username"
+                <input 
+                  type="text" 
+                  name="username" 
                       value={editableData.username}
                       onChange={handleFieldChange}
                       className="w-full px-4 py-2 bg-gray-800/60 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
                       placeholder="Username"
                     />
-                  </div>
+            </div>
                    <div>
                     <label className="block text-blue-300 text-sm font-medium mb-1">Email Address</label>
                     <input
@@ -374,12 +424,12 @@ const ProfilePage = () => {
                       disabled // Email is not editable
                       className="w-full px-4 py-2 bg-gray-800/30 border border-gray-700 rounded-md text-gray-500 cursor-not-allowed"
                     />
-                  </div>
+          </div>
                   <div>
                     <label className="block text-blue-300 text-sm font-medium mb-1">Date of Birth</label>
-                    <input
-                      type="date"
-                      name="dob"
+                <input 
+                  type="date" 
+                  name="dob" 
                       value={editableData.dob}
                       onChange={handleFieldChange}
                       className="w-full px-4 py-2 bg-gray-800/60 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
@@ -396,7 +446,7 @@ const ProfilePage = () => {
                       className="w-full px-4 py-2 bg-gray-800/60 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
                       placeholder="Mobile Number"
                     />
-                  </div>
+            </div>
                    <div>
                     <label className="block text-blue-300 text-sm font-medium mb-1">Location</label>
                     <input
@@ -407,8 +457,8 @@ const ProfilePage = () => {
                       className="w-full px-4 py-2 bg-gray-800/60 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
                       placeholder="Location"
                     />
-                  </div>
-                </div>
+          </div>
+        </div>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { FiUploadCloud, FiXCircle, FiFileText, FiDownload, FiImage, FiSettings } from 'react-icons/fi';
+import { FiUploadCloud, FiXCircle, FiFileText, FiDownload, FiImage, FiSettings, FiLoader } from 'react-icons/fi';
 import Modal from '../components/Modal'; // Import the Modal component
 import CosmicBackground from '../components/CosmicBackground';
 import Footer from '../components/Footer';
@@ -24,6 +24,7 @@ function PdfToImage() {
   const [modalConfig, setModalConfig] = useState({});
   const [downloadFileName, setDownloadFileName] = useState('converted_pdf_to_images.zip');
   const [pdfPreview, setPdfPreview] = useState(null);
+  const [converting, setConverting] = useState(false); // New state for loading indicator
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -83,6 +84,9 @@ function PdfToImage() {
       setModalOpen(true);
       return;
     }
+
+    setConverting(true); // Start loading
+    setModalOpen(false); // Close any previous modal
 
     try {
       const pdfjsLib = await import('pdfjs-dist/build/pdf.min.mjs');
@@ -186,6 +190,7 @@ function PdfToImage() {
       }
       setPdfFile(null);
       setPdfPreview(null);
+      setConverting(false); // End loading
     }
   };
 
@@ -225,27 +230,27 @@ function PdfToImage() {
            transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
            className="lg:col-span-2 bg-gray-800/60 backdrop-blur-lg rounded-2xl shadow-[0_0_50px_rgba(0,255,255,0.1)] p-8 flex flex-col items-center justify-center"
         >
-          {!pdfFile ? (
+            {!pdfFile ? (
             <motion.div 
               className={`upload-zone w-full border-2 border-dashed rounded-xl transition-all duration-300 cursor-pointer ${
                 isDragging || dragOver ? 'border-blue-500 bg-blue-900/20' : 'border-gray-600 hover:border-blue-500'
               }`}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current.click()}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current.click()}
               whileHover={{ scale: 1.01, borderColor: '#3b82f6' }}
               whileTap={{ scale: 0.99 }}
               transition={{ duration: 0.2 }}
-            >
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                className="hidden" 
-                accept="application/pdf" 
-              />
+              >
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                  accept="application/pdf" 
+                />
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
@@ -259,7 +264,7 @@ function PdfToImage() {
                 <p className="text-sm text-blue-300/70 mt-3">Only PDF files are supported</p>
               </div>
             </motion.div>
-          ) : (
+            ) : (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -268,16 +273,16 @@ function PdfToImage() {
               className="relative w-full h-full"
             >
                <div className="aspect-w-3 aspect-h-4 rounded-lg overflow-hidden shadow-xl border border-blue-700/50 mb-4">
-                 <iframe 
-                   src={pdfPreview} 
-                   title="PDF Preview" 
-                   className="w-full h-full"
-                 ></iframe>
-               </div>
+                  <iframe 
+                    src={pdfPreview} 
+                    title="PDF Preview" 
+                    className="w-full h-full"
+                  ></iframe>
+                </div>
               <div className="flex justify-between items-center px-2">
                 <p className="text-white font-medium truncate text-lg">{pdfFile.name}</p>
                 <motion.button 
-                  onClick={handleRemoveFile}
+                    onClick={handleRemoveFile}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   className="text-red-400 hover:text-red-500 transition-colors duration-200 p-2 rounded-full hover:bg-red-900/50"
@@ -297,23 +302,23 @@ function PdfToImage() {
           transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
           className="lg:col-span-1 bg-gray-800/60 backdrop-blur-lg rounded-2xl shadow-[0_0_50px_rgba(0,255,255,0.1)] p-8 flex flex-col justify-between"
         >
-          <div className="space-y-6">
+            <div className="space-y-6">
             {/* Image Format Option */}
-            <div>
+              <div>
               <label htmlFor="imageFormat" className="block text-blue-300 text-lg font-medium mb-3">
                 Output Format
-              </label>
-              <select
-                id="imageFormat"
-                value={imageFormat}
-                onChange={(e) => setImageFormat(e.target.value)}
+                </label>
+                <select
+                  id="imageFormat"
+                  value={imageFormat}
+                  onChange={(e) => setImageFormat(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-700/60 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200 text-base"
-              >
-                <option value="jpg">JPG</option>
-                <option value="png">PNG</option>
-                <option value="webp">WEBP</option>
+                >
+                  <option value="jpg">JPG</option>
+                  <option value="png">PNG</option>
+                  <option value="webp">WEBP</option>
                 <option value="tiff">TIFF (as PNG)</option>
-              </select>
+                </select>
             </div>
             
             {/* Image Quality Option (if re-added) */}
@@ -335,12 +340,23 @@ function PdfToImage() {
           {/* Convert Button */}
           <motion.button
             onClick={handleConvertToImages}
-            disabled={!pdfFile}
+            disabled={!pdfFile || converting}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
             className="mt-auto w-full bg-gradient-to-r from-cyan-600 to-blue-700 text-white text-xl font-bold py-4 rounded-xl shadow-lg hover:from-cyan-700 hover:to-blue-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-             <FiDownload className="h-6 w-6" /> Convert to Images
+            {converting ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <FiLoader className="h-6 w-6" />
+              </motion.div>
+            ) : (
+              <>
+                <FiDownload className="h-6 w-6" /> Convert to Images
+              </>
+            )}
           </motion.button>
         </motion.div>
       </div>

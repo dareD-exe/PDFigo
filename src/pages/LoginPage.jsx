@@ -63,15 +63,15 @@ const LoginPage = () => {
         }
         resolvedEmail = querySnapshot.docs[0].data().email;
         if (!resolvedEmail) {
-          setNotification({ message: 'Could not find email associated with this username.', type: 'error' });
-          setLoading(false);
-          return;
+            setNotification({ message: 'Could not find email associated with this username.', type: 'error' });
+            setLoading(false);
+            return;
         }
       }
       setEmailForAuth(resolvedEmail);
       setStep(2);
     } catch (err) {
-      setNotification({ message: 'Failed to verify your account. Please try again.', type: 'error' });
+        setNotification({ message: 'Failed to verify your account. Please try again.', type: 'error' });
     }
     setLoading(false);
   };
@@ -86,10 +86,10 @@ const LoginPage = () => {
       return;
     }
     if (!emailForAuth) {
-      setNotification({ message: 'An unexpected error occurred. Please go back and re-enter your email/username.', type: 'error' });
-      setLoading(false);
-      setStep(1);
-      return;
+        setNotification({ message: 'An unexpected error occurred. Please go back and re-enter your email/username.', type: 'error' });
+        setLoading(false);
+        setStep(1);
+        return;
     }
     try {
       await signInWithEmailAndPassword(auth, emailForAuth, formData.password);
@@ -108,7 +108,7 @@ const LoginPage = () => {
     }
     setLoading(false);
   };
-
+  
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setNotification({ message: '', type: '' });
@@ -116,8 +116,6 @@ const LoginPage = () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      // Google Sign-in successful. Firebase handles user creation/linking.
-      // The auth state listener will handle navigation if needed.
       navigate('/profile');
     } catch (err) {
       console.error("Google Sign-in error:", err);
@@ -174,7 +172,7 @@ const LoginPage = () => {
           <p className="text-blue-200/80 text-lg">Sign in to continue</p>
         </motion.div>
         <AnimatePresence mode="wait">
-          {step === 1 && (
+        {step === 1 && (
             <motion.form
               key="identifier-form"
               initial={{ opacity: 0, x: -50 }}
@@ -184,28 +182,28 @@ const LoginPage = () => {
               onSubmit={handleIdentifierSubmit}
               className="space-y-6 w-full"
             >
-              <div>
+            <div>
                 <label htmlFor="identifier" className="block text-sm font-medium text-blue-200 mb-2">
-                  Username or Email
-                </label>
+                Username or Email
+              </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    {formData.identifier.includes('@') ?
+                  {formData.identifier.includes('@') ? 
                       <FiMail className="h-5 w-5 text-blue-400" /> :
                       <FiUser className="h-5 w-5 text-blue-400" />
-                    }
-                  </div>
-                  <input
-                    id="identifier"
-                    name="identifier"
-                    type="text"
-                    autoComplete="username email"
-                    required
-                    value={formData.identifier}
-                    onChange={handleChange}
+                  }
+                </div>
+                <input
+                  id="identifier"
+                  name="identifier"
+                  type="text"
+                  autoComplete="username email"
+                  required
+                  value={formData.identifier}
+                  onChange={handleChange}
                     placeholder="Enter your username or email"
                     className="w-full px-4 pl-12 py-3 pr-4 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-base"
-                  />
+                />
                 </div>
                 {notification.message && notification.type === 'error' && (
                   <div className="mt-2 text-pink-400 text-sm animate-fade-in">{notification.message}</div>
@@ -232,8 +230,8 @@ const LoginPage = () => {
                 )}
               </motion.button>
             </motion.form>
-          )}
-          {step === 2 && (
+        )}
+        {step === 2 && (
             <motion.form
               key="password-form"
               initial={{ opacity: 0, x: 50 }}
@@ -243,49 +241,53 @@ const LoginPage = () => {
               onSubmit={handleLogin}
               className="space-y-6 w-full"
             >
-              <div>
+            <div>
                 <div className="flex justify-between items-center mb-2">
                   <label htmlFor="password" className="block text-sm font-medium text-blue-200">
                     Password for <span className='font-semibold text-blue-400'>{emailForAuth}</span>
-                  </label>
+                </label>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     type="button"
-                    onClick={() => { setStep(1); setNotification({ message: '', type: '' }); }}
-                    className="text-xs text-blue-300 hover:text-blue-100 hover:underline focus:outline-none transition duration-200"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-blue-400 hover:text-blue-300 focus:outline-none text-sm"
                   >
-                    Change email/username
+                    {showPassword ? 'Hide' : 'Show'}
                   </motion.button>
                 </div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <FiLock className="h-5 w-5 text-blue-400" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Enter your password"
-                    className="w-full px-4 pl-12 py-3 pr-12 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-base"
-                  />
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <FiEyeOff className="h-5 w-5 text-blue-400 hover:text-white" /> : <FiEye className="h-5 w-5 text-blue-400 hover:text-white" />}
-                  </motion.div>
+                      <FiLock className="h-5 w-5 text-blue-400" />
                 </div>
-                {notification.message && notification.type === 'error' && (
-                  <div className="mt-2 text-pink-400 text-sm animate-fade-in">{notification.message}</div>
-                )}
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                    className="w-full px-4 pl-12 py-3 pr-4 bg-gray-700/60 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-base"
+                />
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? (
+                        <FiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    ) : (
+                        <FiEye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    )}
+                </div>
               </div>
+              {notification.message && notification.type === 'error' && (
+                <div className="mt-2 text-pink-400 text-sm animate-fade-in">{notification.message}</div>
+              )}
+              <div className="text-right">
+                  <Link to="/forgot-password" className="text-sm font-medium text-blue-300 hover:text-blue-200 transition duration-200">
+                    Forgot Password?
+                  </Link>
+              </div>
+            </div>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -294,7 +296,7 @@ const LoginPage = () => {
                 className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition duration-200"
               >
                 {loading ? (
-                  <motion.div
+                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   >
@@ -302,51 +304,47 @@ const LoginPage = () => {
                   </motion.div>
                 ) : (
                   <>
-                    Login <FiLogIn className="ml-2 h-5 w-5" />
+                    Sign In <FiArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
               </motion.button>
+               <button
+                 type="button"
+                 onClick={() => setStep(1)}
+                 className="w-full text-center text-sm text-blue-300 hover:text-blue-200 transition duration-200 mt-4"
+               >
+                 Back to Username/Email
+               </button>
+
             </motion.form>
-          )}
+        )}
         </AnimatePresence>
 
-        {/* Google Sign-in Button */}
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-          className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition duration-200"
-        >
-          {loading ? (
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            >
-              <FiLoader className="h-5 w-5 text-gray-700" />
-            </motion.div>
-          ) : (
-            <>
-              <FcGoogle className="mr-2 h-5 w-5" /> Sign in with Google
-            </>
-          )}
-        </motion.button>
+        <div className="relative w-full py-4 flex items-center">
+          <div className="flex-grow border-t border-gray-700"></div>
+          <span className="flex-shrink mx-4 text-gray-400">Or continue with</span>
+          <div className="flex-grow border-t border-gray-700"></div>
+        </div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="text-center text-sm text-gray-400 mt-6"
-        >
-          <p className="text-sm text-gray-400">
-            New to PDFigo?{' '}
-            <Link to="/signup" className="font-medium text-blue-400 hover:text-blue-300 hover:underline transition duration-200">
-              Sign Up
-            </Link>
-          </p>
-        </motion.div>
+         <motion.button
+           whileHover={{ scale: 1.02 }}
+           whileTap={{ scale: 0.98 }}
+           onClick={handleGoogleSignIn}
+           disabled={loading}
+           className="w-full flex items-center justify-center px-4 py-3 border border-gray-600 text-base font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 disabled:opacity-60 disabled:cursor-not-allowed transition duration-200"
+         >
+          <FcGoogle className="h-6 w-6 mr-3" />
+           Sign in with Google
+         </motion.button>
+        
+        <p className="text-center text-sm text-gray-400 mt-6">
+          Don't have an account? {' '}
+          <Link to="/signup" className="font-medium text-blue-400 hover:text-blue-300 transition duration-200">
+            Sign Up
+          </Link>
+        </p>
       </motion.div>
-      <Footer />
+       <Footer />
     </div>
   );
 };

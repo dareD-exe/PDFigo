@@ -222,8 +222,8 @@ const AddTextWatermark = () => {
                   placeholder="Enter watermark text..."
                   className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-500 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                <div className="flex flex-wrap -mx-2">
+                    <div className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4">
                         <label className="block text-sm font-medium text-gray-400 mb-1">Position</label>
                         <select
                             value={position}
@@ -241,7 +241,7 @@ const AddTextWatermark = () => {
                             <option value="bottom-right">Bottom Right</option>
                         </select>
                     </div>
-                    <div>
+                    <div className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4">
                         <label className="block text-sm font-medium text-gray-400 mb-1">Font Size</label>
                          <input
                             type="number"
@@ -250,39 +250,38 @@ const AddTextWatermark = () => {
                             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-                 </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">Text Color</label>
-                      <input
-                          type="color"
-                          value={textColor}
-                          onChange={(e) => setTextColor(e.target.value)}
-                          className="w-full h-10 rounded-lg bg-gray-800 border border-gray-600 cursor-pointer"
-                      />
+                    <div className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4">
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Rotation (degrees)</label>
+                        <input
+                            type="number"
+                            value={rotation}
+                            onChange={(e) => setRotation(parseInt(e.target.value, 10) || 0)}
+                            className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
                     </div>
-                     <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">Opacity (0.0 - 1.0)</label>
-                      <input
-                          type="number"
-                          step="0.1"
-                          min="0.0"
-                          max="1.0"
-                          value={opacity}
-                          onChange={(e) => setOpacity(parseFloat(e.target.value) || 0)}
-                          className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
+                    <div className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4">
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Color</label>
+                        <input
+                            type="color"
+                            value={textColor}
+                            onChange={(e) => setTextColor(e.target.value)}
+                            className="w-full h-10 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
                     </div>
-                  </div>
-                   <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">Rotation (degrees)</label>
-                      <input
-                          type="number"
-                          value={rotation}
-                          onChange={(e) => setRotation(parseInt(e.target.value, 10) || 0)}
-                          className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
+                    <div className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4">
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Opacity</label>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.1"
+                            value={opacity}
+                            onChange={(e) => setOpacity(parseFloat(e.target.value))}
+                            className="w-full h-10 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-400">{Math.round(opacity * 100)}%</span>
                     </div>
+                </div>
               </motion.div>
             )}
 
@@ -298,29 +297,27 @@ const AddTextWatermark = () => {
             )}
 
             {/* Action Buttons */}
-            {file && ( // Show buttons if file is loaded
-              <div className="flex justify-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
                 <button
-                  onClick={handleAddWatermark}
-                  disabled={!file || !watermarkText || loading}
-                  className={`flex items-center px-6 py-3 rounded-xl font-medium transition-all ${
-                    !file || !watermarkText || loading
-                      ? 'bg-gray-600 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 hover:scale-105'
-                  }`}
+                    onClick={handleAddWatermark}
+                    disabled={!file || !watermarkText || loading}
+                    className={`flex items-center px-6 py-3 rounded-xl font-medium transition-all ${
+                        !file || !watermarkText || loading
+                            ? 'bg-gray-600 cursor-not-allowed'
+                            : 'bg-blue-600 hover:bg-blue-700 hover:scale-105'
+                    }`}
                 >
-                  <FiType className="w-5 h-5 mr-2" />
-                  {loading ? 'Adding Watermark...' : 'Add Watermark & Download'}
+                    <FiType className="w-5 h-5 mr-2" />
+                    {loading ? 'Processing...' : 'Add Watermark'}
                 </button>
                 <button
-                  onClick={clearFile}
-                  className="flex items-center px-6 py-3 rounded-xl font-medium bg-red-600 hover:bg-red-700 hover:scale-105 transition-all"
+                    onClick={clearFile}
+                    className="flex items-center px-6 py-3 rounded-xl font-medium bg-red-600 hover:bg-red-700 hover:scale-105 transition-all"
                 >
-                  <FiTrash2 className="w-5 h-5 mr-2" />
-                  Clear File
+                    <FiTrash2 className="w-5 h-5 mr-2" />
+                    Clear
                 </button>
-              </div>
-            )}
+            </div>
           </div>
         </motion.div>
       </div>

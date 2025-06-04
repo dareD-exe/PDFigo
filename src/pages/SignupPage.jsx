@@ -84,11 +84,11 @@ const SignupPage = () => {
         let age = today.getFullYear() - birthDate.getFullYear();
         const m = today.getMonth() - birthDate.getMonth();
         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-          age--;
+            age--;
         }
         if (age < 13) {
-          setNotification({ message: 'You must be at least 13 years old to sign up.', type: 'error' });
-          return false;
+            setNotification({ message: 'You must be at least 13 years old to sign up.', type: 'error' });
+            return false;
         }
         break;
       case 4:
@@ -157,7 +157,16 @@ const SignupPage = () => {
         navigate('/login');
       }, 2000);
     } catch (err) {
-      setNotification({ message: 'Failed to create account. Please try again. ' + err.message, type: 'error' });
+      console.error("Signup error:", err);
+      let errorMessage = 'Failed to create account. Please try again.';
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already registered. Please login instead.';
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please use a stronger password.';
+      }
+      setNotification({ message: errorMessage, type: 'error' });
     }
     setIsLoading(false);
   };
@@ -354,11 +363,11 @@ const SignupPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 pt-24 relative overflow-hidden bg-gradient-to-br from-gray-900 to-black">
       <CosmicBackground />
-      <Notification 
-        message={notification.message} 
-        type={notification.type} 
-        onClose={() => setNotification({ message: '', type: '' })} 
-      />
+        <Notification 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification({ message: '', type: '' })} 
+        />
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -376,13 +385,13 @@ const SignupPage = () => {
         </motion.div>
         <AnimatePresence mode="wait">
           <form onSubmit={step === 5 ? handleSignup : handleNextStep} className="space-y-6 w-full">
-            {renderStep()}
+          {renderStep()}
             <div className="flex justify-between items-center w-full">
-              {step > 1 && (
+            {step > 1 && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={handlePreviousStep}
+                onClick={handlePreviousStep}
                   className="text-cyan-200 hover:text-white focus:outline-none"
                 >
                   Back
@@ -394,7 +403,7 @@ const SignupPage = () => {
                 type="submit"
                 disabled={isLoading}
                 className={`btn-cosmic ml-auto flex items-center justify-center px-6 py-3 text-lg font-bold w-full disabled:opacity-60 disabled:cursor-not-allowed mt-2`}
-              >
+            >
                 {isLoading ? (
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -405,8 +414,8 @@ const SignupPage = () => {
                 ) : step === 5 ? 'Create Account' : 'Next'}
                 {!isLoading && step !== 5 && <FiArrowRight className="ml-2 h-5 w-5" />}
               </motion.button>
-            </div>
-          </form>
+          </div>
+        </form>
         </AnimatePresence>
         <motion.div 
           initial={{ opacity: 0 }}
@@ -415,11 +424,11 @@ const SignupPage = () => {
           className="text-center mt-6"
         >
           <p className="text-sm text-gray-400">
-            Already have an account?{' '}
+          Already have an account?{' '}
             <Link to="/login" className="font-medium text-blue-400 hover:text-blue-300 hover:underline transition duration-200">
               Login
-            </Link>
-          </p>
+          </Link>
+        </p>
         </motion.div>
       </motion.div>
       <Footer />

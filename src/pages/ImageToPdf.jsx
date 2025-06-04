@@ -235,23 +235,23 @@ function ImageToPdf() {
             className={`upload-zone w-full border-2 border-dashed rounded-xl transition-all duration-300 cursor-pointer ${
               isDragging || dragOver ? 'border-blue-500 bg-blue-900/20' : 'border-gray-600 hover:border-blue-500'
             }`}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current.click()}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current.click()}
             whileHover={{ scale: 1.01, borderColor: '#3b82f6' }}
             whileTap={{ scale: 0.99 }}
             transition={{ duration: 0.2 }}
-          >
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              className="hidden" 
-              multiple 
-              accept="image/*" 
-            />
+        >
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
+            multiple 
+            accept="image/*" 
+          />
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <motion.div
                 whileHover={{ scale: 1.1, rotate: 5 }}
@@ -263,7 +263,7 @@ function ImageToPdf() {
               <p className="text-xl text-white font-medium mb-2">Drag & drop images here</p>
               <p className="text-base text-blue-200/80">or click anywhere in this area to browse</p>
               <p className="text-sm text-blue-300/70 mt-3">Supports JPG, JPEG, PNG, GIF, BMP, WEBP</p>
-            </div>
+          </div>
           </motion.div>
         ) : (
           <motion.div
@@ -274,10 +274,10 @@ function ImageToPdf() {
             className="w-full"
           >
             <h2 className="text-2xl font-bold text-white mb-6">Selected Images ({files.length})</h2>
-            
+          
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
               <AnimatePresence>
-                {files.map((file) => (
+            {files.map((file) => (
                   <motion.div
                     key={file.id}
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -286,13 +286,13 @@ function ImageToPdf() {
                     transition={{ duration: 0.3 }}
                     className="relative group aspect-w-4 aspect-h-3 rounded-lg overflow-hidden shadow-lg border border-gray-700/50"
                   >
-                    <img 
-                      src={file.preview} 
-                      alt={file.file.name}
-                      className="object-cover w-full h-full"
-                    />
+                  <img 
+                    src={file.preview} 
+                    alt={file.file.name}
+                    className="object-cover w-full h-full"
+                  />
                     <motion.button
-                      onClick={() => handleRemoveFile(file.id)}
+                    onClick={() => handleRemoveFile(file.id)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200"
@@ -301,9 +301,9 @@ function ImageToPdf() {
                       <FiXCircle className="h-5 w-5 text-red-400" />
                     </motion.button>
                   </motion.div>
-                ))}
+            ))}
               </AnimatePresence>
-            </div>
+          </div>
 
             <motion.button
               onClick={handleConvertToPdf}

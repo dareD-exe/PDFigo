@@ -218,7 +218,7 @@ const RotatePdf = () => {
 
             {/* Action Buttons */}
             {pdfDoc && totalPages > 0 && (
-              <div className="flex justify-center space-x-4">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                 <button
                   onClick={handleDownload}
                   disabled={loading}

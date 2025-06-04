@@ -39,7 +39,7 @@ const Home = () => {
       icon: <FiFileText className="w-8 h-8" />,
       glow: 'from-pink-500 to-fuchsia-600',
       border: 'border-pink-500',
-    },
+      },
   ];
 
   return (
@@ -47,12 +47,12 @@ const Home = () => {
       <CosmicBackground />
       {/* Hero Section */}
       <section className="relative pt-32 pb-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center z-10">
-        <motion.div
+      <motion.div
           initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
+        animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
           className="flex flex-col items-center gap-6"
-        >
+      >
           <span className="inline-flex items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 to-fuchsia-700 p-8 shadow-2xl mb-4 animate-pulse-slow">
             <FiFileText className="w-16 h-16 text-white" />
           </span>
@@ -82,12 +82,12 @@ const Home = () => {
               <FiChevronRight className="w-6 h-6 ml-2" />
             </Link>
           </motion.div>
-        </motion.div>
+      </motion.div>
       </section>
 
       {/* Tools Grid */}
       <section className="flex-1 py-20 px-4 sm:px-6 lg:px-8 z-10">
-        <motion.div
+      <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
@@ -96,9 +96,9 @@ const Home = () => {
         >
           <h2 className="text-4xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300 mb-16 tracking-wide">Featured Tools</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 xl:gap-12">
-            {tools.map((tool, index) => (
-              <motion.div
-                key={tool.title}
+          {tools.map((tool, index) => (
+            <motion.div
+              key={tool.title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
@@ -106,7 +106,7 @@ const Home = () => {
                 whileHover={{ scale: 1.05, y: -10, boxShadow: '0 15px 30px rgba(0, 255, 255, 0.3)' }}
                 whileTap={{ scale: 0.98 }}
                 className="h-full relative group rounded-2xl overflow-hidden bg-gray-800/60 border border-blue-700/50 shadow-lg"
-              >
+            >
                 <Link to={tool.path} className="block h-full p-8">
                   <div className={`absolute inset-0 bg-gradient-to-br opacity-20 group-hover:opacity-30 transition-opacity duration-300 ${tool.glow}`}></div>
                   <div className="relative z-10 flex flex-col items-start">
@@ -119,12 +119,12 @@ const Home = () => {
                       Use Tool
                       <FiChevronRight className="w-5 h-5 ml-1 transform group-hover:translate-x-1 transition-transform duration-200" />
                     </span>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
       </section>
 
       {/* Features Section */}

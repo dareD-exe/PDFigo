@@ -184,7 +184,7 @@ const RearrangePdf = () => {
                 className="bg-gray-700/30 rounded-xl p-6 space-y-4"
               >
                 <h3 className="text-lg font-semibold text-white">Drag and Drop to Reorder Pages</h3>
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
                   {pageOrder.map((originalIndex, currentIndex) => (
                     <div
                       key={originalIndex} // Use original index as key
@@ -216,7 +216,7 @@ const RearrangePdf = () => {
 
             {/* Action Buttons */}
             {file && totalPages > 0 && (
-              <div className="flex justify-center space-x-4">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                 <button
                   onClick={handleDownload}
                   disabled={loading}

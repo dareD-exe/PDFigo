@@ -82,7 +82,7 @@ const Navbar = () => {
           <Link to="/" className="flex items-center gap-2 text-2xl font-extrabold text-white tracking-widest" style={{ fontFamily: 'WDXL Lubrifont TC, cursive' }}>
             {/* <FiFileText className="w-9 h-9 text-cyan-400 neon-cosmic" /> */}
             PDFigo
-          </Link>
+            </Link>
 
           {/* Right side: Tools Dropdown + Auth/Profile */}
           <div className="flex items-center gap-4">
@@ -101,7 +101,7 @@ const Navbar = () => {
                 </button>
                 <AnimatePresence>
                   {isToolsOpen && (
-                    <motion.div
+                <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
@@ -112,7 +112,7 @@ const Navbar = () => {
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 px-2">
                         {tools.map((tool) => (
-                          <Link
+                  <Link
                             key={tool.path}
                             to={tool.path}
                             className={`block px-3 py-2 rounded-md text-blue-100 hover:bg-blue-900/30 hover:text-blue-300 transition text-base font-medium ${location.pathname === tool.path ? 'font-bold text-blue-400' : ''}`}
@@ -226,7 +226,7 @@ const Navbar = () => {
                                     Mute
                                   </button>
                                 </motion.div>
-                              )}
+                    )}
                             </AnimatePresence>
                           </div>
                           <button
@@ -248,7 +248,7 @@ const Navbar = () => {
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
                       >
-                      </motion.div>
+                </motion.div>
                     )}
                   </AnimatePresence> */}
                 </div>
@@ -296,7 +296,7 @@ const Navbar = () => {
                 </button>
                 <AnimatePresence>
                   {isToolsOpen && (
-                    <motion.div
+                <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
@@ -305,16 +305,16 @@ const Navbar = () => {
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 pr-2">
                         {tools.map((tool) => (
-                          <Link
+                  <Link
                             key={tool.path}
                             to={tool.path}
                             className={`block px-3 py-2 rounded-md text-lg font-medium ${
                               location.pathname === tool.path
                                 ? 'text-cyan-400 bg-cyan-900/30'
                                 : 'text-cyan-200 hover:text-cyan-400 hover:bg-cyan-900/20'
-                            }`}
+                    }`}
                             onClick={() => { setIsToolsOpen(false); setIsMobileMenuOpen(false); }}
-                          >
+                  >
                             {tool.name}
                           </Link>
                         ))}
@@ -365,7 +365,7 @@ const Navbar = () => {
                         >
                           <FiLogOut className="w-5 h-5" /> Logout
                         </button>
-                      </motion.div>
+                </motion.div>
                     )}
                   </AnimatePresence>
                 </div>

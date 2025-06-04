@@ -6,11 +6,11 @@ import './App.css';
 function App() {
   return (
     <div className="min-h-screen bg-transparent">
-      <Navbar />
-      <AnimatePresence mode="wait">
-        <Routes />
-      </AnimatePresence>
-    </div>
+        <Navbar />
+        <AnimatePresence mode="wait">
+          <Routes />
+        </AnimatePresence>
+      </div>
   );
 }
 

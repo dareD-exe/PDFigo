@@ -163,7 +163,7 @@ const PdfToText = () => {
 
               {/* Action Buttons */}
               {file && ( // Show buttons if file is loaded
-                <div className="flex justify-center space-x-4">
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                   <button
                     onClick={handleExtractText}
                     disabled={!file || loading}

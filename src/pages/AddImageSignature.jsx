@@ -195,10 +195,10 @@ const AddImageSignature = () => {
               {/* PDF File Upload */}
               <div className="flex flex-col items-center justify-center">
                 <div className="w-full max-w-xl">
-                  <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-700/50 hover:bg-gray-700/70 transition-colors">
+                  <label className="flex flex-col items-center justify-center w-full h-40 sm:h-48 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-700/50 hover:bg-gray-700/70 transition-colors">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <FiUpload className="w-12 h-12 text-gray-400 mb-4" />
-                      <p className="mb-2 text-sm text-gray-400">
+                      <FiUpload className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mb-3 sm:mb-4" />
+                      <p className="mb-2 text-sm text-gray-400 text-center px-4">
                         <span className="font-semibold">Click to upload PDF</span> or drag and drop
                       </p>
                       <p className="text-xs text-gray-500">PDF files only</p>
@@ -212,22 +212,22 @@ const AddImageSignature = () => {
                     />
                   </label>
                 </div>
-                {pdfFile && <p className="mt-4 text-gray-300">Selected PDF: <span className="font-semibold text-white">{pdfFile.name}</span></p>}
+                {pdfFile && <p className="mt-4 text-gray-300 text-center">Selected PDF: <span className="font-semibold text-white">{pdfFile.name}</span></p>}
               </div>
 
-               {/* Signature Image Upload */}
+              {/* Signature Image Upload */}
               {pdfFile && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="bg-gray-700/30 rounded-xl p-6 space-y-4"
+                  className="bg-gray-700/30 rounded-xl p-4 sm:p-6 space-y-4"
                 >
-                   <div className="flex flex-col items-center justify-center">
+                  <div className="flex flex-col items-center justify-center">
                     <div className="w-full max-w-xl">
-                      <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-700/50 hover:bg-gray-700/70 transition-colors">
+                      <label className="flex flex-col items-center justify-center w-full h-40 sm:h-48 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-700/50 hover:bg-gray-700/70 transition-colors">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <FiImage className="w-12 h-12 text-gray-400 mb-4" />
-                          <p className="mb-2 text-sm text-gray-400">
+                          <FiImage className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mb-3 sm:mb-4" />
+                          <p className="mb-2 text-sm text-gray-400 text-center px-4">
                             <span className="font-semibold">Click to upload Signature Image</span> or drag and drop
                           </p>
                           <p className="text-xs text-gray-500">Image files only</p>
@@ -241,49 +241,52 @@ const AddImageSignature = () => {
                         />
                       </label>
                     </div>
-                    {signatureImage && <p className="mt-4 text-gray-300">Selected Signature: <span className="font-semibold text-white">{signatureImage.name}</span></p>}
+                    {signatureImage && <p className="mt-4 text-gray-300 text-center">Selected Signature: <span className="font-semibold text-white">{signatureImage.name}</span></p>}
                   </div>
                 </motion.div>
               )}
 
               {/* Signature Options */}
               {signatureImage && (
-                   <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="bg-gray-700/30 rounded-xl p-6 space-y-4"
-                    >
-                        <h3 className="text-lg font-semibold text-white">Signature Options</h3>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                              <label className="block text-sm font-medium text-gray-400 mb-1">Position</label>
-                              <select
-                                  value={position}
-                                  onChange={(e) => setPosition(e.target.value)}
-                                  className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                  <option value="top-left">Top Left</option>
-                                  <option value="top-center">Top Center</option>
-                                  <option value="top-right">Top Right</option>
-                                  <option value="middle-left">Middle Left</option>
-                                  <option value="center">Center</option>
-                                  <option value="middle-right">Middle Right</option>
-                                  <option value="bottom-left">Bottom Left</option>
-                                  <option value="bottom-center">Bottom Center</option>
-                                  <option value="bottom-right">Bottom Right</option>
-                              </select>
-                          </div>
-                           <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Size (pixels wide)</label>
-                            <input
-                                type="number"
-                                value={size}
-                                onChange={(e) => setSize(parseInt(e.target.value, 10) || 0)}
-                                className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
-                        </div>
-                    </motion.div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-gray-700/30 rounded-xl p-4 sm:p-6 space-y-4"
+                >
+                  <h3 className="text-lg font-semibold text-white text-center sm:text-left">Signature Options</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">Position</label>
+                      <select
+                        value={position}
+                        onChange={(e) => setPosition(e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="top-left">Top Left</option>
+                        <option value="top-center">Top Center</option>
+                        <option value="top-right">Top Right</option>
+                        <option value="middle-left">Middle Left</option>
+                        <option value="center">Center</option>
+                        <option value="middle-right">Middle Right</option>
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="bottom-center">Bottom Center</option>
+                        <option value="bottom-right">Bottom Right</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">Size (pixels)</label>
+                      <input
+                        type="range"
+                        min="50"
+                        max="200"
+                        value={size}
+                        onChange={(e) => setSize(parseInt(e.target.value, 10))}
+                        className="w-full h-10 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-400">{size}px</span>
+                    </div>
+                  </div>
+                </motion.div>
               )}
 
               {/* Error Message */}
@@ -291,35 +294,34 @@ const AddImageSignature = () => {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg"
+                  className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-center sm:text-left"
                 >
                   {error}
                 </motion.div>
               )}
 
               {/* Action Buttons */}
-              {pdfFile && signatureImage && (
-                <div className="flex justify-center space-x-4">
-                  <button
-                    onClick={handleAddSignature}
-                    disabled={!pdfFile || !signatureImage || loading}
-                    className={`flex items-center px-6 py-3 rounded-xl font-medium transition-all ${
-                      !pdfFile || !signatureImage || loading
-                        ? 'bg-gray-600 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700 hover:scale-105'
-                    }`}
-                  >
-                    {loading ? 'Adding Signature...' : 'Add Signature & Download'}
-                  </button>
-                  <button
-                    onClick={clearFiles}
-                    className="flex items-center px-6 py-3 rounded-xl font-medium bg-red-600 hover:bg-red-700 hover:scale-105 transition-all"
-                  >
-                    <FiTrash2 className="w-5 h-5 mr-2" />
-                    Clear Files
-                  </button>
-                </div>
-              )}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+                <button
+                  onClick={handleAddSignature}
+                  disabled={!pdfFile || !signatureImage || loading}
+                  className={`flex items-center px-6 py-3 rounded-xl font-medium transition-all ${
+                    !pdfFile || !signatureImage || loading
+                      ? 'bg-gray-600 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700 hover:scale-105'
+                  }`}
+                >
+                  <FiImage className="w-5 h-5 mr-2" />
+                  {loading ? 'Processing...' : 'Add Signature'}
+                </button>
+                <button
+                  onClick={clearFiles}
+                  className="flex items-center px-6 py-3 rounded-xl font-medium bg-red-600 hover:bg-red-700 hover:scale-105 transition-all"
+                >
+                  <FiTrash2 className="w-5 h-5 mr-2" />
+                  Clear
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>

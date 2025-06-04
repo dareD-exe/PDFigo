@@ -237,7 +237,7 @@ const PageNumbers = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <label className="text-lg text-teal-200">Number Format</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {[
                         { value: '1', label: '1' },
                         { value: '1/10', label: '1/10' },
@@ -260,7 +260,7 @@ const PageNumbers = () => {
 
                   <div className="space-y-4">
                     <label className="text-lg text-teal-200">Position</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {[
                         { value: 'bottom-left', label: 'Bottom Left' },
                         { value: 'bottom-center', label: 'Bottom Center' },
@@ -282,7 +282,7 @@ const PageNumbers = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-center">
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                   <button
                     onClick={handleAddPageNumbers}
                     disabled={loading}

@@ -204,11 +204,11 @@ function PdfMerge() {
           className="text-center mb-12"
         >
           <h1 className="text-4xl font-bold text-white sm:text-5xl mb-4">
-            Merge PDF Files
-          </h1>
+          Merge PDF Files
+        </h1>
           <p className="mt-4 text-xl text-blue-200/90 max-w-2xl mx-auto">
             Combine multiple PDF documents into a single file in your preferred order. Fast and secure.
-          </p>
+        </p>
         </motion.div>
 
         <motion.div 
@@ -221,23 +221,23 @@ function PdfMerge() {
             className={`upload-zone w-full border-2 border-dashed rounded-xl transition-all duration-300 ${
               dragOver ? 'border-blue-500 bg-blue-900/20' : 'border-gray-600 hover:border-blue-500'
             }`}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current.click()}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current.click()}
             whileHover={{ scale: 1.01, borderColor: '#3b82f6' }}
             whileTap={{ scale: 0.99 }}
             transition={{ duration: 0.2 }}
-          >
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              className="hidden" 
-              multiple 
-              accept="application/pdf" 
-            />
+        >
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
+            multiple 
+            accept="application/pdf" 
+          />
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <motion.div
                 whileHover={{ scale: 1.1, rotate: 5 }}
@@ -249,12 +249,12 @@ function PdfMerge() {
               <p className="text-xl text-white font-medium mb-2">Drag & drop PDF files here</p>
               <p className="text-base text-blue-200/80">or click anywhere in this area to browse</p>
               <p className="text-sm text-blue-300/70 mt-3">Only PDF files are supported</p>
-            </div>
+          </div>
           </motion.div>
         </motion.div>
 
         <AnimatePresence>
-          {files.length > 0 && (
+      {files.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -318,13 +318,13 @@ function PdfMerge() {
               </ul>
 
               <motion.button
-                onClick={handleMergePdfs}
-                disabled={files.length < 2}
+              onClick={handleMergePdfs}
+              disabled={files.length < 2}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 className="mt-10 w-full bg-gradient-to-r from-cyan-600 to-blue-700 text-white text-xl font-bold py-4 rounded-xl shadow-lg hover:from-cyan-700 hover:to-blue-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Merge PDFs
+            >
+              Merge PDFs
               </motion.button>
             </motion.div>
           )}
