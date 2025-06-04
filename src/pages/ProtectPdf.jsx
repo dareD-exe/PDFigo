@@ -92,11 +92,16 @@ const ProtectPdf = () => {
       formData.append('password', password);
       formData.append('permissions', JSON.stringify(permissions));
 
+      // Check if we're on a mobile device
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
       const response = await axios.post('http://localhost:5000/api/protect-pdf', formData, {
         responseType: 'blob',
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        // Add timeout for mobile devices
+        timeout: isMobile ? 30000 : 15000,
       });
 
       // Create a download link for the protected PDF
@@ -104,10 +109,28 @@ const ProtectPdf = () => {
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `protected_${file.name}`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      
+      // For mobile devices, open in new tab if download doesn't work
+      if (isMobile) {
+        try {
+          document.body.appendChild(link);
+          link.click();
+          // Wait a bit before removing the link
+          setTimeout(() => {
+            link.remove();
+            window.URL.revokeObjectURL(url);
+          }, 1000);
+        } catch (mobileError) {
+          console.error('Mobile download error:', mobileError);
+          // Fallback: Open in new tab
+          window.open(url, '_blank');
+        }
+      } else {
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }
 
       // Reset state
       setFile(null);
@@ -136,6 +159,8 @@ const ProtectPdf = () => {
           }
         };
         reader.readAsText(err.response.data);
+      } else if (err.code === 'ECONNABORTED') {
+        setError('Request timed out. Please try again with a smaller file or check your internet connection.');
       } else {
         setError('Error protecting PDF. Please try again.');
       }

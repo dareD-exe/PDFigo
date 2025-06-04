@@ -57,8 +57,21 @@ app.post('/api/protect-pdf', upload.single('pdf'), validateFile, (req, res) => {
     console.log('Received request with:', { 
       passwordLength: password?.length,
       permissions: permissions,
-      fileSize: req.file?.size
+      fileSize: req.file?.size,
+      userAgent: req.headers['user-agent']
     });
+
+    // Check if the request is from a mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(req.headers['user-agent']);
+    
+    // Adjust max file size for mobile devices
+    const maxFileSize = isMobile ? 10 * 1024 * 1024 : 20 * 1024 * 1024; // 10MB for mobile, 20MB for desktop
+    
+    if (req.file.size > maxFileSize) {
+      return res.status(400).json({
+        error: `File size exceeds the limit. Maximum size is ${isMobile ? '10MB' : '20MB'} for ${isMobile ? 'mobile' : 'desktop'} devices.`
+      });
+    }
 
     const parsedPermissions = JSON.parse(permissions);
     const pdfBuffer = req.file.buffer;
@@ -145,9 +158,19 @@ app.post('/api/protect-pdf', upload.single('pdf'), validateFile, (req, res) => {
           return;
         }
 
-        // Send the protected file to the client
+        // Set appropriate headers for mobile devices
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=protected.pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=protected_${req.file.originalname}`);
+        res.setHeader('Content-Length', protectedPdfBuffer.length);
+        
+        // For mobile devices, add cache control headers
+        if (isMobile) {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        }
+
+        // Send the protected file to the client
         res.send(protectedPdfBuffer);
 
         // Clean up the output file after sending
