@@ -51,7 +51,7 @@ const UnlockPdf = () => {
       // Check if we're on a mobile device
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
-      const response = await axios.post('http://localhost:5000/api/unlock-pdf', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/unlock-pdf`, formData, {
         responseType: 'blob',
         headers: {
           'Content-Type': 'multipart/form-data',
