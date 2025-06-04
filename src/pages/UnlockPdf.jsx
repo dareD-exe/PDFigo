@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FiUpload, FiDownload, FiUnlock, FiTrash2 } from 'react-icons/fi';
-import { PDFDocument } from 'pdf-lib';
+import { FiUpload, FiDownload, FiUnlock, FiTrash2, FiEye, FiEyeOff } from 'react-icons/fi';
 import CosmicBackground from '../components/CosmicBackground';
 import Footer from '../components/Footer';
 import { useEffect } from 'react';
+import axios from 'axios';
 
 const UnlockPdf = () => {
   useEffect(() => {
@@ -18,6 +18,7 @@ const UnlockPdf = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -43,27 +44,49 @@ const UnlockPdf = () => {
     setError('');
 
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      // Attempt to load the PDF with the provided password
-      const pdfDoc = await PDFDocument.load(arrayBuffer, { password: password });
+      const formData = new FormData();
+      formData.append('pdf', file);
+      formData.append('password', password);
 
-      // If loading succeeds, save the PDF without encryption
-      const pdfBytes = await pdfDoc.save(); // Saving without encryptionDict removes protection
+      // Check if we're on a mobile device
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      const response = await axios.post('http://localhost:5000/api/unlock-pdf', formData, {
+        responseType: 'blob',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        // Add timeout for mobile devices
+        timeout: isMobile ? 30000 : 15000,
+      });
 
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-
-      // Create a local URL for the blob and trigger download
-      const downloadUrl = URL.createObjectURL(blob);
-
+      // Create a download link for the unlocked PDF
+      const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `unlocked_${file.name}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Clean up the local URL
-      URL.revokeObjectURL(downloadUrl);
+      link.href = url;
+      link.setAttribute('download', `unlocked_${file.name}`);
+      
+      // For mobile devices, open in new tab if download doesn't work
+      if (isMobile) {
+        try {
+          document.body.appendChild(link);
+          link.click();
+          // Wait a bit before removing the link
+          setTimeout(() => {
+            link.remove();
+            window.URL.revokeObjectURL(url);
+          }, 1000);
+        } catch (mobileError) {
+          console.error('Mobile download error:', mobileError);
+          // Fallback: Open in new tab
+          window.open(url, '_blank');
+        }
+      } else {
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }
 
       // Reset state
       setFile(null);
@@ -73,12 +96,22 @@ const UnlockPdf = () => {
       }
 
     } catch (err) {
-      // Handle errors, likely due to incorrect password or corrupted PDF
-      if (err.message === 'Incorrect password') {
-         setError('Incorrect password. Please try again.');
+      console.error('Error unlocking PDF:', err);
+      if (err.response?.data) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const errorData = JSON.parse(reader.result);
+            setError(errorData.error || 'Error unlocking PDF. Please try again.');
+          } catch (e) {
+            setError('Error unlocking PDF. Please try again.');
+          }
+        };
+        reader.readAsText(err.response.data);
+      } else if (err.code === 'ECONNABORTED') {
+        setError('Request timed out. Please try again with a smaller file or check your internet connection.');
       } else {
-         setError('Error unlocking PDF. Please ensure the file is a valid, protected PDF.');
-         console.error(err);
+        setError('Error unlocking PDF. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -156,13 +189,22 @@ const UnlockPdf = () => {
                 className="bg-gray-700/30 rounded-xl p-6"
               >
                 <h3 className="text-lg font-semibold text-white mb-4">Enter Password to Unlock</h3>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-500 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter password"
+                    className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-500 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  >
+                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
               </motion.div>
             )}
 
