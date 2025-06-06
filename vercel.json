@@ -11,10 +11,16 @@
       "config": { "memory": 512 }
     }
   ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server"
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/dist/index.html"
     }
   ]
 }
