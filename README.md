@@ -83,7 +83,7 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/pdfigo.git
+   git clone https://github.com/dareD-exe/pdfigo.git
    cd pdfigo
    ```
 
@@ -272,8 +272,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - **Email**: support@pdfigo.com
-- **Issues**: [GitHub Issues](https://github.com/yourusername/pdfigo/issues)
-- **Documentation**: [Wiki](https://github.com/yourusername/pdfigo/wiki)
+- **Issues**: [GitHub Issues](https://github.com/dareD-exe/pdfigo/issues)
+- **Documentation**: [Wiki](https://github.com/dareD-exe/pdfigo/wiki)
 
 ## 🔄 Changelog
 
@@ -289,9 +289,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by [Your Name]**
+**Made with ❤️ by Murtuja**
 
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-blue?style=social&logo=github)](https://github.com/yourusername)
-[![Twitter](https://img.shields.io/badge/Twitter-Follow-blue?style=social&logo=twitter)](https://twitter.com/yourusername)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-blue?style=social&logo=github)](https://github.com/dareD-exe)
+[![Twitter](https://img.shields.io/badge/Twitter-Follow-blue?style=social&logo=twitter)](https://twitter.com/dareD)
 
 </div> 
